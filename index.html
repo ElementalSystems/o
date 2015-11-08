@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>AHS DEMO</title>
+	<style>
+		body { margin: 0; padding: 0; }
+		canvas { width: 100%; height: 100%; }
+	</style>
+</head>
+<body>
+<script src="js/three.min.js"></script>
+<script src="util.js"></script>
+<script src="obits.js"></script>
+<script>
+
+    
+    
+   
+	var WIDTH = window.innerWidth;
+	var HEIGHT = window.innerHeight;
+	var renderer = new THREE.WebGLRenderer({antialias:true});
+	renderer.setSize(WIDTH, HEIGHT);
+	renderer.setClearColor(0x000000, 1);
+	document.body.appendChild(renderer.domElement);
+	var outscene = new THREE.Scene();
+	var scene = new THREE.Scene();
+	
+	var camera = new THREE.PerspectiveCamera(70, WIDTH/HEIGHT);
+	camera.position.z = 50;
+	outscene.add(camera);
+	
+	addBoard(scene,0,0,-20,0,3.14/2,0);
+	addTorus(scene,0,0,0);
+    addTorus(scene,0,10,-10);
+    addNail(scene,0,10,-15,-3.14/2);
+	addNail(scene,0,0,0,3.14/2);
+	
+	
+	outscene.add(scene);
+	var light = new THREE.PointLight(0x33FF33);
+    light.position.set(20, 10, 50);
+    outscene.add(light);
+	
+	var light2 = new THREE.AmbientLight(0x111166);
+    //light2.position.set(-50, 50, 50);
+    outscene.add(light2);
+	
+	function render() {
+		requestAnimationFrame(render);
+		//scene.rotation.y += 0.005;
+		renderer.render(outscene, camera);
+	}
+	
+	render();
+	
+	//mousy stuff
+	function runMouse(clickFunction) {
+	  var dragStartX,dragStartY,dragStartT,dragNow=false;
+	  var dragStartRX,dragStartRY;
+	  function mouseDown(evt)
+	  {
+	     evt.preventDefault();
+	     if (dragNow) return;
+		 dragNow=true;
+		 dragStartX=evt.clientX;
+		 dragStartY=evt.clientY;		 
+		 dragStartT=tickCount();
+		 dragStartRX=scene.rotation.x;
+		 dragStartRY=scene.rotation.y;
+	  }
+	  function mouseUp(evt)
+	  {
+	     evt.preventDefault();
+		 //was it a click?
+		 if ((Math.abs(evt.clientX-dragStartX)<5)&&
+		     (Math.abs(evt.clientY-dragStartY)<5)&&
+			 (Math.abs(tickCount()-dragStartT)<200)) { //I think that was a click!			 
+			 dragNow=false;
+			 clickFunction(evt.clientX,evt.clientY);			 
+			 return;
+		 }		 
+	     mouseMove(evt);
+	     dragNow=false;
+	  }
+	  
+	  function mouseMove(evt)
+	  {
+	     evt.preventDefault();
+	     if (!dragNow) return;
+		 var xd=evt.clientX-dragStartX;
+		 var yd=evt.clientY-dragStartY;
+		 scene.rotation.x=dragStartRX+(yd/window.innerHeight)*3.14;		 
+		 scene.rotation.y=dragStartRY+(xd/window.innerWidth)*3.14;		 
+	  }
+	  
+	  document.addEventListener( 'mousemove', mouseMove, false );
+      document.addEventListener( 'mousedown', mouseDown, false );
+      document.addEventListener( 'mouseup', mouseUp, false );
+    }
+	
+	
+	raycaster = new THREE.Raycaster();
+	
+	function activateObject(hitEl) 
+	{
+	   var v1 = new THREE.Vector3(0,-20,0);
+	   v1.applyQuaternion( hitEl.quaternion );
+	   var startx=hitEl.position.x;
+	   var starty=hitEl.position.y;
+	   var startz=hitEl.position.z;
+	   
+	   callEachFrame(2000,function(r) {
+	     hitEl.position.x=inter(r,startx,startx+v1.x,siso);
+	     hitEl.position.y=inter(r,starty,starty+v1.y,siso);
+	     hitEl.position.z=inter(r,startz,startz+v1.z,siso);
+	   });
+	   
+	}
+	
+	function clickSelect(sx,sy)
+	{
+	   
+	   raycaster.setFromCamera( {x: sx/window.innerWidth*2-1, y: -sy/window.innerHeight*2+1 }, camera );
+	   var results = raycaster.intersectObject( scene,true );
+       if ( results.length > 0 ) { //seems we hit comeone
+	     var hitEl=results[0].object;
+         activateObject(hitEl);		 
+       }
+		
+	}
+	
+	runMouse(clickSelect);
+	
+</script>
+</body>
+</html>
+
