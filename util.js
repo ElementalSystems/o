@@ -38,6 +38,7 @@ function callEachFrame(time,each,end)
 
 function siso(r) { return 3*r*r-2*r*r*r;}
 function so(r) { return 2*r-r*r;}
+function si(r) { return r*r;}
 
 function inter(r,st,end,func)
 {
@@ -52,3 +53,8 @@ function tickCount()
 	  return new Date().getTime();
 }
 
+function setMaterialIndex(geo,index)
+{
+	for (var i=0;i<geo.faces.length;i+=1)
+		geo.faces[i].materialIndex=index;
+}

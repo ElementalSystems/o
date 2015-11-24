@@ -25,7 +25,7 @@ function initMouse(scene,camera,clickFunction) {
 		 //was it a click?
 		 if ((Math.abs(evt.clientX-dragStartX)<5)&&
 		     (Math.abs(evt.clientY-dragStartY)<5)&&
-			 (Math.abs(tickCount()-dragStartT)<200)) { //I think that was a click!			 
+			 (Math.abs(tickCount()-dragStartT)<400)) { //I think that was a click!			 
 			 dragNow=false;
 			 clickSelect(evt.clientX,evt.clientY);			 
 			 return;
@@ -50,7 +50,7 @@ function initMouse(scene,camera,clickFunction) {
 	    raycaster.setFromCamera( {x: sx/window.innerWidth*2-1, y: -sy/window.innerHeight*2+1 }, camera );
 	    var results = raycaster.intersectObject( scene,true );
         if ( results.length > 0 ) { //seems we hit comeone
-	      var hitEl=results[0].object;
+	      var hitEl=results[0].object.parent;
           clickFunction(hitEl);		 
         }		
 	  }
