@@ -40,6 +40,16 @@ function siso(r) { return 3*r*r-2*r*r*r;}
 function so(r) { return 2*r-r*r;}
 function si(r) { return r*r;}
 
+function reRange(st,ed,func) {
+	return function(r) {
+	  if (r<st) return 0;
+	  if (r>ed) return 1;
+	  r=(r-st)/(ed-st);
+	  if (func) return func(r);
+	  return r;
+	}	
+}
+
 function inter(r,st,end,func)
 {
 	if (r<0) r=0;

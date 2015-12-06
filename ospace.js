@@ -2,7 +2,8 @@
 
 var puzzle={
 	scene: null,
-	camera: null
+	camera: null,
+	renderer: null
 };
 
 function createOSpace() {
@@ -10,6 +11,7 @@ function createOSpace() {
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	renderer.setClearColor(0x000000, 1);
 	renderer.shadowMapEnabled = true;
+	puzzle.renderer=renderer;
 
 	document.body.appendChild(renderer.domElement);
 	var outscene = new THREE.Scene();
@@ -66,7 +68,7 @@ function createOSpace() {
 	function clickedIt(hitEl) 
 	{
 	   if (hitEl.obit.move>=hitEl.obit.moves.length) return; //we don't have a move left for this piece
-	   
+	   if (hitEl.obit.isMoving) return; //already in motion ignore touch
 	   var m = hitEl.obit.moves[hitEl.obit.move];
 	   
 	   //check the depends lists
@@ -79,44 +81,10 @@ function createOSpace() {
 		    if (scene.children[j].name==ft.dname) //the right control
 			  if (scene.children[j].obit.move==ft.match) //the right value
 			    if (ft.failPt<finalPt) finalPt=ft.failPt;   		 			 
-	   }
+	   }	   
+	   m.execute(hitEl,finalPt);
 	   
-	   //m.execute(hitEl,finalPt);
-	   
-	   var dir = new THREE.Vector3().copy(m.trans).multiplyScalar(finalPt);
-	   var inner=hitEl.obit.inner;
-	   var startp=new THREE.Vector3().copy(inner.position);
-	   var startr=new THREE.Vector3().copy(inner.rotation);
-	   var rotdir = new THREE.Vector3();
-	   if (m.rot) rotdir.copy(m.rot).multiplyScalar(finalPt);
-
-	   var moveAttempt=hitEl.obit.move;
-       if (finalPt>=1) hitEl.obit.move=(hitEl.obit.move+1)%hitEl.obit.moves.length; //move complete
-	   if (hitEl.obit.moveSound) soundFX.play(hitEl.obit.moveSound,1000*finalPt);
-	   callEachFrame(1000*finalPt,function(r) {
-	     inner.position.x=inter(r,startp.x,startp.x+dir.x,siso);
-	     inner.position.y=inter(r,startp.y,startp.y+dir.y,siso);
-	     inner.position.z=inter(r,startp.z,startp.z+dir.z,siso);	
-         inner.rotation.x=inter(r,startr.x,startr.x+rotdir.x,siso);
-	     inner.rotation.y=inter(r,startr.y,startr.y+rotdir.y,siso);
-	     inner.rotation.z=inter(r,startr.z,startr.z+rotdir.z,siso);			 
-	   },function(){
-	     if (finalPt<1) {//roll it back
-		  soundFX.play('fail',1000);
-
-		  callEachFrame(1000*2*finalPt,function(r) {
-	        inner.position.x=inter(r,startp.x+dir.x,startp.x,siso);
-	        inner.position.y=inter(r,startp.y+dir.y,startp.y,siso);
-	        inner.position.z=inter(r,startp.z+dir.z,startp.z,siso);
-			inner.rotation.x=inter(r,startr.x+rotdir.x,startr.x,siso);
-	        inner.rotation.y=inter(r,startr.y+rotdir.y,startr.y,siso);
-	        inner.rotation.z=inter(r,startr.z+rotdir.z,startr.z,siso);			 
-	      });		   		 
-		 } else { //all moved
-		   if (hitEl.obit.onMoveComplete) hitEl.obit.onMoveComplete(moveAttempt); //call the handler
-	       //hitEl.obit.move=(hitEl.obit.move+1)%hitEl.obit.moves.length;	   
-	     }
-	   });	  
+	   	  
 	}	
 }
 	
@@ -149,3 +117,12 @@ function closeLevel(newFactory)
   });
   
 }
+
+
+function onResize()
+{
+    puzzle.camera.aspect = window.innerWidth / window.innerHeight;
+    puzzle.camera.updateProjectionMatrix();
+
+    puzzle.renderer.setSize( window.innerWidth, window.innerHeight );
+}	
