@@ -398,6 +398,7 @@ function addLevelIndicator(name,num,x,y,z,rx,ry,rz)
   var n=addOBit(name,puzzle.scene,geo,mat,x,y,z,rx,ry,rz);
   if (num<=allow) n.obit.addMove(new THREE.Vector3(0,0,0),new THREE.Vector3(3.14,3.14*4,0));
   n.obit.onMoveComplete=function() {	  
+      ga('send', 'event', 'OpenLevel_'+num);
 	  closeLevel(levelFactory[num]);
   }
   n.obit.moveSound='win';  
